@@ -1,0 +1,5 @@
+.DS_Store
+navigator-non-public-parties/navigator.log
+ui-backend-*.conf
+*.log
+.daml

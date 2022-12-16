@@ -1,0 +1,22 @@
+participant1.domains.connect_local(mydomain)
+participant2.domains.connect_local(mydomain)
+
+val bank = participant1.parties.enable(
+    "Bank", waitForDomain = DomainChoice.All
+  )
+val alice = participant2.parties.enable(
+    "Alice", waitForDomain = DomainChoice.All
+  )
+
+utils.generate_navigator_conf(
+    participant1,
+    Some("./ui-backend-participant1.conf")
+  )
+utils.generate_navigator_conf(
+    participant2,
+    Some("./ui-backend-participant2.conf")
+  )
+
+val dar = ".daml/dist/navigator-non-local-parties-0.0.1.dar"
+participant1.dars.upload(dar)
+participant2.dars.upload(dar)
