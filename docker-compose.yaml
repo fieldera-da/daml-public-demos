@@ -39,7 +39,7 @@ services:
 
   pqs1_db:
     container_name: pqs1_db
-    image: postgres:16
+    image: postgres:14
     environment:
       - POSTGRES_PASSWORD=postgres
     healthcheck:
@@ -86,12 +86,12 @@ services:
     image: digitalasset-docker.jfrog.io/daml-shell:0.0.1-main.20240315.48.867.v1a70ccf
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    network_mode: "host"
+    network_mode: "host" # docker run -net host
     # command: connect jdbc:postgresql://localhost/?user=postgres&password=postgres
     command: --connect --postgres-password postgres
-    depends_on:
-      participant1:
-        condition: service_healthy
+    # depends_on:
+    #  pqs1_scribe:
+    #    condition: service_healthy
 
   daml_export:
     container_name: daml_export

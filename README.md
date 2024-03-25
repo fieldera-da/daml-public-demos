@@ -28,12 +28,13 @@ Run the demo:
 
 ```
 daml build
-docker compose up pqs1_scribe --detach
+--docker compose up participant1 --detach
 docker compose up scripts
 ```
 
 See that the contracts are created:
 ```
+docker compose up pqs1_scribe --detach
 docker compose run --rm daml_shell
 ```
 
@@ -49,22 +50,34 @@ daml ledger export script --host localhost --port 5003 --output export --sdk-ver
 Restart system:
 ```
 docker compose down
-docker compose up pqs1_scribe --detach
+docker compose up participant1 --detach
 ```
 
-Prove contracts are not yet loaded:
+Restart ledger as ledger 
 ```
-docker compose run --rm daml_shell
+docker compose up participant1 --detach
+```
+
+Allocate parties 
+```
+daml ledger allocate-parties --host localhost --port 5003 alice
+daml ledger allocate-parties --host localhost --port 5003 bob
+```
+
+Update partyIds in second colomn of ./export/args.json. Only the participant id will be different.
+```
+nano -w ./export/args.json
 ```
 
 Load contracts using export daml:
 ```
-daml build ./export/Export.daml
+daml build --project-root ./export/
 daml script --ledger-host localhost --ledger-port 5003 --dar ./export/.daml/dist/export-1.0.0.dar --script-name Export:export --input-file ./export/args.json
 ```
 
 Prove contracts were loaded:
 ```
+docker compose up pqs1_scribe --detach
 docker compose run --rm daml_shell
 ```
 
@@ -74,3 +87,6 @@ Shutdown system:
 ```
 docker compose down
 ```
+
+### Navigator alternative [deprecated]
+daml navigator server localhost 5003 --feature-user-management false
