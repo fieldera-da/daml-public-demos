@@ -1,24 +1,10 @@
-# Daml Public Demos by Wallace Kelly
+# Daml Public Demos of Daml Shell and Daml Export by Andrew Fielder
 
-Each demo is in its own Git branch.
+Purpose is the highlight the usefulness of Daml Shell and Daml Export for investigation of issues resulting from complex application state.
 
-## Purpose
+## Demo Steps
 
-This demo gets a minimal instance of PQS up-and-running.
-This demo is for initial investigation of PQS -- not a full production configuration.
-
-```mermaid
-flowchart LR
-    scripts --> participant1
-    participant1 <--> mydomain
-    participant1 --> pqs1_scribe
-    subgraph PQS
-    pqs1_scribe --> pqs1_db
-    end
-    pqs1_db --> adminer1
-```
-
-## Sample Commands
+### Deploy ledger and initailise with contracts
 
 Checkout the demo:
 
@@ -30,60 +16,61 @@ Get the required images:
 
 ```
 docker login digitalasset-docker.jfrog.io
-
 docker compose pull
+```
+
+Stop local postgres if it is running [It is on Andrew's machine]
+```
+sudo systemctl stop postgresql
 ```
 
 Run the demo:
 
 ```
 daml build
-
 docker compose up pqs1_scribe --detach
-
-# wait for services to be up-and-running
-
-docker compose up adminer1 --detach
-
-# explore the database (http://localhost:8080/)
-
 docker compose up scripts
+```
 
+See that the contracts are created:
+```
+docker compose run --rm daml_shell
+```
+
+### Export contracts
+
+Run Daml export:
+```
+daml ledger export script --host localhost --port 5003 --output export --sdk-version 2.8.3 --all-parties
+```
+
+### Bring up clean ledger and import pre-existing contracts
+
+Restart system:
+```
 docker compose down
+docker compose up pqs1_scribe --detach
 ```
 
-## Additional Commands
-
-Open a `psql` console to the PQS.
-
+Prove contracts are not yet loaded:
 ```
-docker run -it --rm --network pqs-simple-docker-compose_default  --volume ./:/host/ postgres:16 psql --host=pqs1_db --username=postgres postgres
+docker compose run --rm daml_shell
 ```
 
+Load contracts using export daml:
 ```
-postgres=# \dt
-               List of relations
- Schema |       Name        | Type  |  Owner
---------+-------------------+-------+----------
- public | Accept.123dj3po   | table | postgres
- public | Archive.11wnvoab  | table | postgres
- public | Bid.20ini8        | table | postgres
- public | BidRequest.sbovf0 | table | postgres
- public | PaintHouse.kcam2p | table | postgres
- public | Propose.x0zrvu    | table | postgres
- public | _archives         | table | postgres
- public | _creates          | table | postgres
- public | _creates_mappings | table | postgres
- public | _exercises        | table | postgres
- public | _mappings         | table | postgres
- public | _reassignments    | table | postgres
- public | _transactions     | table | postgres
- public | _watermark        | table | postgres
+daml build ./export/Export.daml
+daml script --ledger-host localhost --ledger-port 5003 --dar ./export/.daml/dist/export-1.0.0.dar --script-name Export:export --input-file ./export/args.json
+```
 
-postgres=# select payload->'acceptedBid'->'amount' as amount from "PaintHouse.kcam2p";
+Prove contracts were loaded:
+```
+docker compose run --rm daml_shell
+```
 
-      amount
--------------------
- "1000.0000000000"
-(1 row)
+### Cleanup
+
+Shutdown system:
+```
+docker compose down
 ```
