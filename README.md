@@ -58,14 +58,9 @@ Restart ledger as ledger
 docker compose up participant1 --detach
 ```
 
-Allocate parties 
+Update participant id of the partyIds in second colomn of ./export/args.json.
 ```
-daml ledger allocate-parties --host localhost --port 5003 alice
-daml ledger allocate-parties --host localhost --port 5003 bob
-```
-
-Update partyIds in second colomn of ./export/args.json. Only the participant id will be different.
-```
+daml ledger list-parties --host localhost --port 5003
 nano -w ./export/args.json
 ```
 
